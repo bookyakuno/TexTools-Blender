@@ -11,13 +11,13 @@ from . import op_bake
 preview_collections = {}
 
 size_textures = [
-		('32', '32', ''), 
-		('64', '64', ''), 
-		('128', '128', ''), 
-		('256', '256', ''), 
-		('512', '512', ''), 
-		('1024', '1024', ''), 
-		('2048', '2048', ''), 
+		('32', '32', ''),
+		('64', '64', ''),
+		('128', '128', ''),
+		('256', '256', ''),
+		('512', '512', ''),
+		('1024', '1024', ''),
+		('2048', '2048', ''),
 		('4096', '4096', ''),
 		('8192', '8192', '')
 	]
@@ -33,11 +33,11 @@ def GetContextView3D():
 	for window in bpy.context.window_manager.windows:
 		screen = window.screen
 		for area in screen.areas:
-			if area.type == 'VIEW_3D': 
+			if area.type == 'VIEW_3D':
 				for region in area.regions:
 					if region.type == 'WINDOW':
 						override = {'window': window, 'screen': screen, 'area': area, 'region': region, 'scene': bpy.context.scene, 'edit_object': bpy.context.edit_object, 'active_object': bpy.context.active_object, 'selected_objects': bpy.context.selected_objects}   # Stuff the override context with very common requests by operators.  MORE COULD BE NEEDED!
-						return override					
+						return override
 	return None
 
 
@@ -45,11 +45,11 @@ def GetContextViewUV():
 	for window in bpy.context.window_manager.windows:
 		screen = window.screen
 		for area in screen.areas:
-			if area.type == 'IMAGE_EDITOR': 
+			if area.type == 'IMAGE_EDITOR':
 				for region in area.regions:
-					if region.type == 'WINDOW': 
+					if region.type == 'WINDOW':
 						override = {'window': window, 'screen': screen, 'area': area, 'region': region, 'scene': bpy.context.scene, 'edit_object': bpy.context.edit_object, 'active_object': bpy.context.active_object, 'selected_objects': bpy.context.selected_objects}   # Stuff the override context with very common requests by operators.  MORE COULD BE NEEDED!
-						return override			
+						return override
 	return None
 
 
@@ -73,22 +73,22 @@ def generate_bake_mode_previews():
 	preview_collection = preview_collections["thumbnail_previews"]
 	image_location = preview_collection.images_location
 	VALID_EXTENSIONS = ('.png', '.jpg', '.jpeg')
-	
+
 	enum_items = []
-	
+
 	# Generate the thumbnails
 	for i, image in enumerate(os.listdir(image_location)):
 		mode = image[0:-4]
-		print(".. .{}".format(mode))
+		# print(".. .{}".format(mode))
 
 
 		if image.endswith(VALID_EXTENSIONS) and mode in op_bake.modes:
 			filepath = os.path.join(image_location, image)
 			thumb = preview_collection.load(filepath, filepath, 'IMAGE')
 			enum_items.append((image, mode, "", thumb.icon_id, i))
-			
+
 	return enum_items
-	
+
 
 def get_bake_mode():
 	return str(bpy.context.scene.TT_bake_mode).replace(".png","").lower()
@@ -99,16 +99,16 @@ class op_popup(bpy.types.Operator):
 	bl_label = "Message"
 
 	message : StringProperty()
- 
+
 	def execute(self, context):
 		self.report({'INFO'}, self.message)
 		print(self.message)
 		return {'FINISHED'}
- 
+
 	def invoke(self, context, event):
 		wm = context.window_manager
-		return wm.invoke_popup(self, width=200, height=200)
- 
+		return wm.invoke_popup(self, width=200)
+
 	def draw(self, context):
 		self.layout.label(text=self.message)
 
@@ -124,8 +124,8 @@ def on_bakemode_set(self, context):
 def register():
 	from bpy.types import Scene
 	from bpy.props import StringProperty, EnumProperty
-	
-	print("_______REgister previews")
+
+	# print("_______REgister previews")
 
 	# Operators
 	# bpy.utils.register_class(op_popup)
@@ -138,7 +138,7 @@ def register():
 	preview_collection.images_location = os.path.join(os.path.dirname(__file__), "resources/bake_modes")
 	preview_collections["thumbnail_previews"] = preview_collection
 
-	
+
 	# This is an EnumProperty to hold all of the images
 	# You really can save it anywhere in bpy.types.*  Just make sure the location makes sense
 	bpy.types.Scene.TT_bake_mode = EnumProperty(
@@ -147,24 +147,25 @@ def register():
 		default = 'normal_tangent.png'
 	)
 
-	
+
 def unregister():
 
-	print("_______UNregister previews")
+	# print("_______UNregister previews")
 
 	from bpy.types import WindowManager
 	for preview_collection in preview_collections.values():
 		bpy.utils.previews.remove(preview_collection)
-	preview_collections.clear()
-	
+		preview_collection.clear()
+
 
 	# Unregister icons
 	# global preview_icons
-	bpy.utils.previews.remove(preview_icons)
+	# bpy.utils.previews.remove(preview_icons)
+	preview_icons.clear()
 
 
 	del bpy.types.Scene.TT_bake_mode
-   
+
 if __name__ == "__main__":
 	register()
 bpy.utils.register_class(op_popup)
